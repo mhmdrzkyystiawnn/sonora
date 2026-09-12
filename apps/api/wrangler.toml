@@ -1,0 +1,13 @@
+name = "sonora-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Neon Postgres connection string
+# Set via: wrangler secret put DATABASE_URL
+# Same for JWT_SECRET, LASTFM_API_KEY, LASTFM_API_URL
+
+# Optional: KV for caching
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "your-kv-id"

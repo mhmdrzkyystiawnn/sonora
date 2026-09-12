@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/playlist/shared/:token",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!api|assets|favicon).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "sonora",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "shared:add": "pnpm add @sonora/shared --filter @sonora/api --filter @sonora/web --workspace",
+    "shared:remove": "pnpm remove @sonora/shared --filter @sonora/api --filter @sonora/web --workspace",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types"
+  },
+  "devDependencies": {
+    "prettier": "^3.7.4",
+    "turbo": "^2.10.8",
+    "typescript": "5.9.2"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,14 @@
+fix: update wrangler.toml with alias for Hono subpath imports
+
+Wrapping up migration to Cloudflare Workers. All business logic migrated:
+- Express → Hono
+- Drizzle ORM → raw SQL via @neondatabase/serverless
+- jsonwebtoken → jose
+- @node-rs/argon2 → bcryptjs
+- Schema types → TypeScript interfaces
+
+NOTE: Wrangler bundling needs [alias] table for Hono subpath imports
+('hono/cors', 'hono/logger', 'hono/factory'). Install Vite + @cloudflare/vite-plugin
+for better bundling support if wrangler --local doesn't work.
+
+See: https://github.com/cloudflare/workers-sdk/issues/6851

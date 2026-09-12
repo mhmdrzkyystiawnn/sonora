@@ -1,0 +1,39 @@
+# Render blueprint — Sonora API (Express + tsx)
+# Deploy: connect this repo on Render, pick this file (or use the Blueprint button).
+# Docs: https://docs.render.com/blueprint-spec
+
+services:
+  - type: web
+    name: sonora-api
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: corepack enable && pnpm install --frozen-lockfile
+    startCommand: pnpm --filter @sonora/api start
+    # Runs once before the new version goes live — applies SQL migrations.
+    preDeployCommand: pnpm --filter @sonora/api db:migrate
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: CORS_ORIGIN
+        value: https://YOUR-WEB-DOMAIN.vercel.app # TODO: ganti ke domain web
+      - key: LASTFM_API_URL
+        value: https://ws.audioscrobbler.com/2.0/
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        sync: false
+      - key: LASTFM_API_KEY
+        sync: false
+      - key: LASTFM_SHARED_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash-lite
+      - key: SENTRY_DSN
+        sync: false
