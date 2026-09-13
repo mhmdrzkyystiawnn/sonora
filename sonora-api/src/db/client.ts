@@ -1,29 +1,28 @@
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 
-// Works in both Deno and Node.js
-function getEnv(name: string): string | undefined {
-  if (typeof Deno !== "undefined") {
-    return Deno.env.get(name);
+let _client: NeonQueryFunction<any, any> | null = null;
+
+export function initDb(env: Record<string, string>) {
+  const connectionString = env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is not defined");
   }
-  return process.env[name];
+  _client = neon(connectionString);
 }
 
-function getRequiredEnv(name: string): string {
-  const value = getEnv(name);
-  if (!value) throw new Error(`${name} is not defined`);
-  return value;
+function getClient(): NeonQueryFunction<any, any> {
+  if (!_client) {
+    throw new Error("Database not initialized. Call initDb(env) first.");
+  }
+  return _client;
 }
-
-const connectionString = getRequiredEnv("DATABASE_URL");
-
-const client: NeonQueryFunction<any, any> = neon(connectionString);
 
 export const db = {
   async query<T = any>(sql: string, params?: any[]): Promise<T[]> {
-    const result = await client(sql, params || []);
+    const result = await getClient()(sql, params || []);
     return result as T[];
   },
   async execute(sql: string): Promise<void> {
-    await client(sql);
+    await getClient()(sql);
   },
 };

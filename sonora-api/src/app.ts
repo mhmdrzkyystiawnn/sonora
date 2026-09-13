@@ -1,6 +1,9 @@
 /// <reference lib="cloudflare" />
 
 import { Hono } from "hono";
+import { initDb } from "./db/client";
+import { initLastFmConfig } from "./integrations/lastfm/lastfm.client";
+import { initJwt } from "./lib/auth/jwt";
 
 const app = new Hono();
 
@@ -10,7 +13,28 @@ const ALLOWED_ORIGINS = [
   "https://sonora-web-three.vercel.app",
 ];
 
+// Initialize services with env on each request
 app.use("*", async (c, next) => {
+  const env = c.env as Record<string, string>;
+  
+  try {
+    initDb(env);
+  } catch {
+    // Already initialized
+  }
+  
+  try {
+    initLastFmConfig(env);
+  } catch {
+    // Already initialized
+  }
+  
+  try {
+    initJwt(env);
+  } catch {
+    // Already initialized
+  }
+
   const origin = c.req.header("origin") ?? "";
   const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
   
@@ -19,6 +43,7 @@ app.use("*", async (c, next) => {
   c.res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
   c.res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (c.req.method === "OPTIONS") return c.text("", 204);
+  
   await next();
 });
 

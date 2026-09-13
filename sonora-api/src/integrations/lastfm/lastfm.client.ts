@@ -1,30 +1,39 @@
 import { ApiError } from "../../lib/api-error.ts";
 
-function getRequiredEnv(name: string): string {
-  const value = process.env[name];
+type LastFmConfig = {
+  apiUrl: string;
+  apiKey: string;
+};
 
-  if (!value) {
-    throw new Error(`${name} is not defined`);
-  }
+let _config: LastFmConfig | null = null;
 
-  return value;
+export function initLastFmConfig(env: Record<string, string>) {
+  _config = {
+    apiUrl: env.LASTFM_API_URL,
+    apiKey: env.LASTFM_API_KEY,
+  };
 }
 
-const lastFmApiUrl = getRequiredEnv("LASTFM_API_URL");
-const apiKey = getRequiredEnv("LASTFM_API_KEY");
+export function getLastFmConfig(): LastFmConfig {
+  if (!_config) {
+    throw new Error("Last.fm config not initialized. Call initLastFmConfig(env) first.");
+  }
+  return _config;
+}
 
 type lastFmRequestParams = Record<string, string>;
 
 export async function lastFmRequest<T>(
   params: lastFmRequestParams,
 ): Promise<T> {
+  const config = getLastFmConfig();
   const searchParams = new URLSearchParams(params);
 
-  searchParams.set("api_key", apiKey);
+  searchParams.set("api_key", config.apiKey);
   searchParams.set("format", "json");
 
   const response = await fetch(
-    `${lastFmApiUrl}?${searchParams.toString()}`,
+    `${config.apiUrl}?${searchParams.toString()}`,
   );
 
   if (!response.ok) {
