@@ -1,0 +1,16 @@
+name = "sonora-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[limits]
+subrequests = 100
+
+[vars]
+DATABASE_URL = "postgresql://neondb_owner:npg_0v2qOGMtpeij@ep-broad-snow-b3gmsfar-pooler.c-4.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+JWT_SECRET = "2c8e9f1a4b7d3e6f0a9b2c5d8e1f4a7b0c3d6e9f2a5b8c1d4e7f0a3b6c9d2e5"
+JWT_EXPIRES_IN = "7d"
+LASTFM_API_KEY = "800cf054baa4de6df8203580e98df18b"
+LASTFM_API_URL = "https://ws.audioscrobbler.com/2.0/"
+CORS_ORIGIN = "https://sonora.muhamadrizky.my.id"
+PORT = "3000"
