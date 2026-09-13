@@ -26,10 +26,14 @@ export async function request<T>(
     body?: unknown;
   },
 ): Promise<T> {
+  const token = localStorage.getItem("token");
+  
   const response = await fetch(`${API_URL}${url}`, {
     method: options?.method ?? "GET",
-    credentials: "include",
-    headers: options?.body ? { "Content-Type": "application/json" } : undefined,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: options?.body ? JSON.stringify(options.body) : undefined,
   });
 

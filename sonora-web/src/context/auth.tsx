@@ -6,7 +6,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import type { LoginInput, RegisterInput, User } from ".../shared/index";
+import type { LoginInput, RegisterInput, User } from "../shared/index";
 import * as authApi from "../api/auth";
 
 type AuthContextValue = {
@@ -32,17 +32,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const register = useCallback(async (input: RegisterInput) => {
-    const nextUser = await authApi.register(input);
+    const { user: nextUser, token } = await authApi.register(input);
+    localStorage.setItem("token", token);
     setUser(nextUser);
   }, []);
 
   const login = useCallback(async (input: LoginInput) => {
-    const nextUser = await authApi.login(input);
+    const { user: nextUser, token } = await authApi.login(input);
+    localStorage.setItem("token", token);
     setUser(nextUser);
   }, []);
 
   const logout = useCallback(async () => {
-    await authApi.logout();
+    localStorage.removeItem("token");
     setUser(null);
   }, []);
 

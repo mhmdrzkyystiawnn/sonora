@@ -1,20 +1,23 @@
-import type { LoginInput, RegisterInput, User } from ".../shared/index";
+import type { LoginInput, RegisterInput, User } from "../shared/index";
 import { request } from "./client";
 
-export async function register(input: RegisterInput): Promise<User> {
-  const response = await request<{ data: User }>("/api/auth/register", {
-    method: "POST",
-    body: input,
-  });
-  return response.data;
+export interface AuthResponse {
+  data: User;
+  token?: string;
 }
 
-export async function login(input: LoginInput): Promise<User> {
-  const response = await request<{ data: User }>("/api/auth/login", {
+export async function register(input: RegisterInput): Promise<AuthResponse> {
+  return request<AuthResponse>("/api/auth/register", {
     method: "POST",
     body: input,
   });
-  return response.data;
+}
+
+export async function login(input: LoginInput): Promise<AuthResponse> {
+  return request<AuthResponse>("/api/auth/login", {
+    method: "POST",
+    body: input,
+  });
 }
 
 export async function logout(): Promise<void> {

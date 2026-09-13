@@ -3,12 +3,20 @@ import { ApiError } from "../api-error.ts";
 import { verifyAccessToken } from "./jwt.ts";
 
 export async function requireAuth(c: Context, next: Next) {
-  const cookie = c.req.header("cookie");
+  // Try Authorization header first, then cookie
   let token: string | undefined;
 
-  if (cookie) {
-    const match = cookie.match(/(?:^|;\s*)token=([^;]+)/);
-    token = match?.[1];
+  const authHeader = c.req.header("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    token = authHeader.slice(7);
+  }
+
+  if (!token) {
+    const cookie = c.req.header("cookie");
+    if (cookie) {
+      const match = cookie.match(/(?:^|;\s*)token=([^;]+)/);
+      token = match?.[1];
+    }
   }
 
   if (!token) {
