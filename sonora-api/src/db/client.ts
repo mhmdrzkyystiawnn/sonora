@@ -22,7 +22,7 @@ export const db = {
     const result = await getClient()(sql, params || []);
     return result as T[];
   },
-  async execute(sql: string): Promise<void> {
-    await getClient()(sql);
+  async execute(sql: string, params?: any[]): Promise<void> {
+    await getClient()(sql, params || []);
   },
 };

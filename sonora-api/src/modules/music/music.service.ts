@@ -57,28 +57,29 @@ export async function searchMusic(query: string) {
     await lastFmRequest<LastFmTrackSearchResponse>({
       method: "track.search",
       track: query,
+      limit: "10",
     });
 
   const tracks = response.results.trackmatches.track;
 
-  const enriched = await Promise.all(
-    tracks.map(async (track) => {
-      const lastFmImage = getLastFmImageUrl(track.image);
+  // Sequential to avoid "too many subrequests"
+  const enriched: ReturnType<typeof rowToMusic>[] = [];
+  for (const track of tracks) {
+    const lastFmImage = getLastFmImageUrl(track.image);
+    
+    let itunes: { imageUrl?: string; previewUrl?: string } = {};
+    if (!lastFmImage) {
+      itunes = await getITunesTrackData(track.artist, track.name);
+    }
 
-      const itunes = await getITunesTrackData(
-        track.artist,
-        track.name,
-      );
-
-      return musicSchema.parse({
-        title: track.name,
-        artist: track.artist,
-        url: track.url,
-        imageUrl: lastFmImage ?? itunes.imageUrl,
-        previewUrl: itunes.previewUrl,
-      });
-    }),
-  );
+    enriched.push(musicSchema.parse({
+      title: track.name,
+      artist: track.artist,
+      url: track.url,
+      imageUrl: lastFmImage ?? itunes.imageUrl,
+      previewUrl: itunes.previewUrl,
+    }));
+  }
 
   await db.execute(
     "INSERT INTO music_cache (cache_key, payload) VALUES ($1, $2) ON CONFLICT (cache_key) DO UPDATE SET payload = EXCLUDED.payload, created_at = NOW()",
@@ -121,29 +122,29 @@ export async function getSimilarTracks(artist: string, track: string) {
     method: "track.getsimilar",
     artist,
     track,
-    limit: "100",
+    limit: "20",
   });
 
   const tracks = response.similartracks?.track || [];
 
-  const enriched = await Promise.all(
-    tracks.map(async (t) => {
-      const lastFmImage = getLastFmImageUrl(t.image);
+  // Sequential to avoid "too many subrequests"
+  const enriched: ReturnType<typeof rowToMusic>[] = [];
+  for (const t of tracks) {
+    const lastFmImage = getLastFmImageUrl(t.image);
+    
+    let itunes: { imageUrl?: string; previewUrl?: string } = {};
+    if (!lastFmImage) {
+      itunes = await getITunesTrackData(t.artist.name, t.name);
+    }
 
-      const itunes = await getITunesTrackData(
-        t.artist.name,
-        t.name,
-      );
-
-      return musicSchema.parse({
-        title: t.name,
-        artist: t.artist.name,
-        url: t.url,
-        imageUrl: lastFmImage ?? itunes.imageUrl,
-        previewUrl: itunes.previewUrl,
-      });
-    }),
-  );
+    enriched.push(musicSchema.parse({
+      title: t.name,
+      artist: t.artist.name,
+      url: t.url,
+      imageUrl: lastFmImage ?? itunes.imageUrl,
+      previewUrl: itunes.previewUrl,
+    }));
+  }
 
   await db.execute(
     "INSERT INTO music_cache (cache_key, payload) VALUES ($1, $2) ON CONFLICT (cache_key) DO UPDATE SET payload = EXCLUDED.payload, created_at = NOW()",
@@ -217,7 +218,10 @@ export async function getTrack(artist: string, track: string) {
 
   const lastFmImage = getLastFmImageUrl(data.album?.image);
 
-  const itunes = await getITunesTrackData(artist, track);
+  let itunes: { imageUrl?: string; previewUrl?: string } = {};
+  if (!lastFmImage) {
+    itunes = await getITunesTrackData(artist, track);
+  }
 
   const result = trackDetailSchema.parse({
     title: data.name,
