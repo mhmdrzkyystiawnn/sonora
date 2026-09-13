@@ -1,13 +1,20 @@
 /// <reference lib="cloudflare" />
 
 import { Hono } from "hono";
-import { env } from "./lib/env";
 
 const app = new Hono();
 
+const ALLOWED_ORIGINS = [
+  "https://sonora.muhamadrizky.my.id",
+  "http://localhost:5173",
+  "https://sonora-web-three.vercel.app",
+];
+
 app.use("*", async (c, next) => {
-  const origin = env.CORS_ORIGIN ?? "https://sonora.muhamadrizky.my.id";
-  c.res.headers.set("Access-Control-Allow-Origin", origin);
+  const origin = c.req.header("origin") ?? "";
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  
+  c.res.headers.set("Access-Control-Allow-Origin", allowedOrigin);
   c.res.headers.set("Access-Control-Allow-Credentials", "true");
   c.res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
   c.res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -16,5 +23,25 @@ app.use("*", async (c, next) => {
 });
 
 app.get("/api/health", (c) => c.json({ status: "ok", message: "sonora api is running" }));
+
+import musicRouter from "./modules/music/music.routes";
+import artistRoutes from "./modules/artist/artist.routes";
+import discoveryRoutes from "./modules/discovery/discovery.routes";
+import authRoutes from "./modules/auth/auth.routes";
+import libraryRoutes from "./modules/library/library.routes";
+import recommendationRoutes from "./modules/recommendation/recommendation.routes";
+import genreRoutes from "./modules/genre/genre.routes";
+import followRoutes from "./modules/follow/follow.routes";
+import statsRoutes from "./modules/stats/stats.routes";
+
+app.route("/api/music", musicRouter);
+app.route("/api/artists", artistRoutes);
+app.route("/api/discovery", discoveryRoutes);
+app.route("/api/auth", authRoutes);
+app.route("/api/library", libraryRoutes);
+app.route("/api/recommendation", recommendationRoutes);
+app.route("/api/genre", genreRoutes);
+app.route("/api", followRoutes);
+app.route("/api/stats", statsRoutes);
 
 export default app;
